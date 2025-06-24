@@ -129,17 +129,17 @@
 <body>
     <!-- CREATE THE HTML FOR THE PAYMENT PAGE -->
     <div class="payment-form">
-        <h3>Credit Card</h3>
-        
+        <div class="form-group">
+            <label for="cardholder-name">Cardholder name</label>
+            <input type="text" id="cardholder-name" class="input-field" title="cardholder name"
+                aria-label="enter name on card" value="" tabindex="5" readonly>
+        </div>
+
         <div class="form-group">
             <label for="card-number">Card number</label>
             <input type="text" id="card-number" class="input-field" title="card number"
                 aria-label="enter your card number" value="" tabindex="1" readonly>
             <div id="card-number-error" class="error-message"></div>
-            <div class="card-icons">
-                <img src="https://cdn.visa.com/v2/assets/images/logos/visa/blue/logo.png" alt="Visa">
-                <img src="https://brand.mastercard.com/content/dam/mccom/brandcenter/brand-history/brandhistory_mc_vrt_120_2x.png" alt="Mastercard">
-            </div>
         </div>
 
         <div class="expiry-fields">
@@ -158,13 +158,7 @@
         </div>
 
         <div class="form-group">
-            <label for="cardholder-name">Cardholder name</label>
-            <input type="text" id="cardholder-name" class="input-field" title="cardholder name"
-                aria-label="enter name on card" value="" tabindex="5" readonly>
-        </div>
-
-        <div class="form-group">
-            <label for="security-code">Security code</label>
+            <label for="security-code">CVV</label>
             <div class="security-code-wrapper">
                 <input type="text" id="security-code" class="input-field" title="security code"
                     aria-label="three digit CCV security code" value="" tabindex="4" maxlength="3" readonly>
@@ -219,7 +213,9 @@
                             console.log("Card Type: " + response.sourceOfFunds.provided.card.scheme)
 
                             // Send success response back to mobile app
-                            window.location.href = "app://addCardSuccess?sessionId=" + response.session.id;
+                            if (window.spdigitalUtilitiesAndroid && window.spdigitalUtilitiesAndroid.addCardSuccess) {
+                                window.spdigitalUtilitiesAndroid.addCardSuccess(response.session.id);
+                            }
 
                             //check if the security code was provided by the user
                             if (response.sourceOfFunds.provided.card.securityCode) {
