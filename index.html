@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- INCLUDE SESSION.JS JAVASCRIPT LIBRARY -->
+    <script src="https://ap-gateway.mastercard.com/form/version/71/merchant/TEST001500073424/session.js"></script>
+    <!-- APPLY CLICK-JACKING STYLING AND HIDE CONTENTS OF THE PAGE -->
+    <style id="antiClickjack">
+        body {
+            display: none !important;
+        }
+    </style>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .payment-form {
+            background: white;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .input-field:focus {
+            border-color: #2196F3;
+            outline: none;
+        }
+
+        .input-field.error {
+            border-color: #dc3545;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .card-icons {
+            margin: 10px 0;
+        }
+
+        .card-icons img {
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .expiry-fields {
+            display: flex;
+            gap: 15px;
+        }
+
+        .expiry-fields .form-group {
+            flex: 1;
+        }
+
+        .security-code-wrapper {
+            position: relative;
+        }
+
+        .security-code-info {
+            display: inline-block;
+            margin-left: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #2E7D32;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #1B5E20;
+        }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            color: #1976D2;
+            text-decoration: none;
+            margin-top: 15px;
+        }
+
+        .cancel-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- CREATE THE HTML FOR THE PAYMENT PAGE -->
+    <div class="payment-form">
+        <h3>Credit Card</h3>
+        
+        <div class="form-group">
+            <label for="card-number">Card number</label>
+            <input type="text" id="card-number" class="input-field" title="card number"
+                aria-label="enter your card number" value="" tabindex="1" readonly>
+            <div id="card-number-error" class="error-message"></div>
+            <div class="card-icons">
+                <img src="https://cdn.visa.com/v2/assets/images/logos/visa/blue/logo.png" alt="Visa">
+                <img src="https://brand.mastercard.com/content/dam/mccom/brandcenter/brand-history/brandhistory_mc_vrt_120_2x.png" alt="Mastercard">
+            </div>
+        </div>
+
+        <div class="expiry-fields">
+            <div class="form-group">
+                <label for="expiry-month">Expiry month</label>
+                <input type="text" id="expiry-month" class="input-field" title="expiry month"
+                    aria-label="two digit expiry month" value="" tabindex="2" placeholder="MM" readonly>
+                <div id="expiry-month-error" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="expiry-year">Expiry year</label>
+                <input type="text" id="expiry-year" class="input-field" title="expiry year"
+                    aria-label="two digit expiry year" value="" tabindex="3" placeholder="YY" readonly>
+                <div id="expiry-year-error" class="error-message"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="cardholder-name">Cardholder name</label>
+            <input type="text" id="cardholder-name" class="input-field" title="cardholder name"
+                aria-label="enter name on card" value="" tabindex="5" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="security-code">Security code</label>
+            <div class="security-code-wrapper">
+                <input type="text" id="security-code" class="input-field" title="security code"
+                    aria-label="three digit CCV security code" value="" tabindex="4" maxlength="3" readonly>
+                <span class="security-code-info">3 digits on back of your card</span>
+            </div>
+        </div>
+
+        <button id="addCard" onclick="submitCard('card');">Add Card</button>
+    </div>
+
+    <!-- JAVASCRIPT FRAME-BREAKER CODE TO PROVIDE PROTECTION AGAINST IFRAME CLICK-JACKING -->
+    <script type="text/javascript">
+        if (self === top) {
+            var antiClickjack = document.getElementById("antiClickjack");
+            antiClickjack.parentNode.removeChild(antiClickjack);
+        } else {
+            top.location = self.location;
+        }
+
+        PaymentSession.configure({
+            fields: {
+                // Attach hosted fields to your payment page
+                card: {
+                    number: "#card-number",
+                    securityCode: "#security-code",
+                    expiryMonth: "#expiry-month",
+                    expiryYear: "#expiry-year",
+                    nameOnCard: "#cardholder-name"
+                }
+            },
+            frameEmbeddingMitigation: ["javascript"],
+            interactions: {
+                displayControl: {
+                    formatCard: "EMBOSSED",
+                    invalidFieldCharacters: "REJECT",
+                    validateOnBlur: true
+                }
+            },
+            callbacks: {
+                initialized: function (response) {
+                    // HANDLE INITIALIZATION RESPONSE
+                    if (response.status === "ok") {
+                        console.log("Ready for payment")
+                    }
+                },
+                formSessionUpdate: function (response) {
+                    // HANDLE RESPONSE FOR UPDATE SESSION
+                    if (response.status) {
+                        if ("ok" == response.status) {
+                            console.log("Session updated with data: " + response.session.id);
+                            console.log("Card Entered: " + response.sourceOfFunds.provided.card.number)
+                            console.log("Card Type: " + response.sourceOfFunds.provided.card.scheme)
+
+                            // Send success response back to mobile app
+                            window.location.href = "app://addCardSuccess?sessionId=" + response.session.id;
+
+                            //check if the security code was provided by the user
+                            if (response.sourceOfFunds.provided.card.securityCode) {
+                                console.log("Security code was provided.");
+                            }
+
+                            //check if the user entered a MasterCard credit card
+                            if (response.sourceOfFunds.provided.card.scheme == 'MASTERCARD') {
+                                console.log("The user entered a MasterCard credit card.")
+                            }
+                        } else if ("fields_in_error" == response.status) {
+                            // Clear all previous errors
+                            clearErrors();
+                            
+                            // HANDLE FIELD ERROR RESPONSES
+                            console.log("Session update failed with field errors.");
+                            if (response.errors.cardNumber) {
+                                showError('card-number', 'Card number invalid or missing.');
+                            }
+                            if (response.errors.expiryYear) {
+                                showError('expiry-year', 'Expiry year invalid or missing.');
+                            }
+                            if (response.errors.expiryMonth) {
+                                showError('expiry-month', 'Expiry month invalid or missing.');
+                            }
+                            if (response.errors.securityCode) {
+                                showError('security-code', 'Security code invalid.');
+                            }
+                        } else if ("request_timeout" == response.status) {
+                            console.log("Session update failed with request timeout: " + response.errors.message);
+                        } else if ("system_error" == response.status) {
+                            console.log("Session update failed with system error: " + response.errors.message);
+                        }
+                    } else {
+                        console.log("Session update failed: " + response);
+                    }
+                }
+            },
+            interaction: {
+                displayControl: {
+                    formatCard: "EMBOSSED",
+                    invalidFieldCharacters: "REJECT"
+                }
+            }
+        });
+
+        // Function to show error message for a field
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorDiv = document.getElementById(fieldId + '-error');
+            if (field && errorDiv) {
+                field.classList.add('error');
+                errorDiv.textContent = message;
+                errorDiv.classList.add('visible');
+            }
+        }
+
+        // Function to clear all error messages
+        function clearErrors() {
+            const errorDivs = document.getElementsByClassName('error-message');
+            const errorFields = document.getElementsByClassName('input-field');
+            
+            // Clear error messages
+            Array.from(errorDivs).forEach(div => {
+                div.textContent = '';
+                div.classList.remove('visible');
+            });
+            
+            // Remove error class from fields
+            Array.from(errorFields).forEach(field => {
+                field.classList.remove('error');
+            });
+        }
+
+        function submitCard() {
+            // Clear any existing errors before submission
+            clearErrors();
+            PaymentSession.updateSessionFromForm('card');
+            // The formSessionUpdate callback in the configure() will handle the response
+            // This includes successful card tokenization or validation errors
+        }
+    </script>
+</body>
+
+</html>
